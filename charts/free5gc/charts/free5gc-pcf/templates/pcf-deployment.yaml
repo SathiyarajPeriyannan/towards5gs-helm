@@ -62,12 +62,13 @@ spec:
         ports:
         - containerPort: {{ .service.port }}
         command: ["./pcf"]
-        args: ["-c", "../config/pcfcfg.yaml"]
+        args: ["-c", "/free5gc/config/pcfcfg.yaml"]
         env:
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/pcfcfg.yaml
+          subPath: pcfcfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

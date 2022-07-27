@@ -61,12 +61,13 @@ spec:
         ports:
         - containerPort: {{ .service.port }}
         command: ["./ausf"]
-        args: ["-c", "../config/ausfcfg.yaml"]
+        args: ["-c", "/free5gc/config/ausfcfg.yaml"]
         env:
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/ausfcfg.yaml
+          subPath: ausfcfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

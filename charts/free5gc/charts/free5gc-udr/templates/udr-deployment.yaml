@@ -61,14 +61,15 @@ spec:
         ports:
         - containerPort: {{ .service.port }}
         command: ["./udr"]
-        args: ["-c", "../config/udrcfg.yaml"]
+        args: ["-c", "/free5gc/config/udrcfg.yaml"]
         env: 
           - name: DB_URI
             value: mongodb://{{ $.Values.mongodb.service.name }}/free5gc
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/udrcfg.yaml
+          subPath: udrcfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

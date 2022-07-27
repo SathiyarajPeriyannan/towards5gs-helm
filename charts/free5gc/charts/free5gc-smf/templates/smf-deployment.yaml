@@ -75,12 +75,16 @@ spec:
           protocol: UDP
         {{- end }}
         command: ["./smf"]
-        args: ["-c", "../config/smfcfg.yaml", "-u", "../config/uerouting.yaml"]
+        args: ["-c", "/free5gc/config/smfcfg.yaml", "-u", "/free5gc/config/uerouting.yaml"]
         env:
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/smfcfg.yaml
+          subPath: smfcfg.yaml
+          name: {{ .volume.name }}
+        - mountPath: {{ .volume.mount }}/uerouting.yaml
+          subPath: uerouting.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

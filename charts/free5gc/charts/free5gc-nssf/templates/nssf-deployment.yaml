@@ -61,12 +61,13 @@ spec:
         ports:
         - containerPort: {{ .service.port }}
         command: ["./nssf"]
-        args: ["-c", "../config/nssfcfg.yaml"]
+        args: ["-c", "/free5gc/config/nssfcfg.yaml"]
         env: 
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/nssfcfg.yaml
+          subPath: nssfcfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

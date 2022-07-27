@@ -61,13 +61,14 @@ spec:
             {{- toYaml .securityContext | nindent 12 }}
         ports:
         - containerPort: {{ .service.port }}
-        command: ["./webconsole"]
-        args: ["-c", "../config/webuicfg.yaml"]
+        command: ["./webui"]
+        args: ["-c", "/free5gc/config/webuicfg.yaml"]
         env:
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/webuicfg.yaml
+          subPath: webuicfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

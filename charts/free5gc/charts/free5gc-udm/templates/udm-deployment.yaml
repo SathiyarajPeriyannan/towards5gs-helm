@@ -61,12 +61,13 @@ spec:
         ports:
         - containerPort: {{ .service.port }}
         command: ["./udm"]
-        args: ["-c", "../config/udmcfg.yaml"]
+        args: ["-c", "/free5gc/config/udmcfg.yaml"]
         env: 
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/udmcfg.yaml
+          subPath: udmcfg.yaml 
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

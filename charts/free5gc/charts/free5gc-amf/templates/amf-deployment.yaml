@@ -79,12 +79,13 @@ spec:
           protocol: {{ $.Values.global.amf.service.ngap.protocol }}
         {{- end }}
         command: ["./amf"]
-        args: ["-c", "../config/amfcfg.yaml"]
+        args: ["-c", "/free5gc/config/amfcfg.yaml"]
         env:
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/amfcfg.yaml
+          subPath: amfcfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}

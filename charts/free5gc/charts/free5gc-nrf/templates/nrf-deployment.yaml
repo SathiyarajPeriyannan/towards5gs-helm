@@ -62,14 +62,15 @@ spec:
         ports:
         - containerPort: {{ $.Values.global.nrf.service.port }}
         command: ["./nrf"]
-        args: ["-c", "../config/nrfcfg.yaml"]
+        args: ["-c", "/free5gc/config/nrfcfg.yaml"]
         env: 
           - name: DB_URI
             value: mongodb://{{ $.Values.mongodb.service.name }}/free5gc
           - name: GIN_MODE
             value: release
         volumeMounts:
-        - mountPath: {{ .volume.mount }}
+        - mountPath: {{ .volume.mount }}/nrfcfg.yaml
+          subPath: nrfcfg.yaml
           name: {{ .volume.name }}
         resources:
             {{- toYaml .resources | nindent 12 }}
