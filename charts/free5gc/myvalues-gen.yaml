@@ -1,0 +1,252 @@
+#
+# Software Name : towards5gs-helm
+# SPDX-FileCopyrightText: Copyright (c) 2021 Orange
+# SPDX-License-Identifier: Apache-2.0
+#
+# This software is distributed under the Apache License 2.0,
+# the text of which is available at todo
+# or see the "LICENSE" file for more details.
+#
+# Author: Abderaouf KHICHANE, Ilhem FAJJARI, Ayoub BOUSSELMI
+# Software description: An open-source project providing Helm charts to deploy 5G components (Core + RAN) on top of Kubernetes
+#
+# Default values for free5gc-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  amf:
+    n2if:  # NGAP
+      ipAddress: 20.100.50.249
+    service:
+      ngap:
+        enabled: true
+  smf:
+    n4if:
+      ipAddress: 20.100.50.244
+
+  #Global network parametes
+  n2network:
+    masterIf: ens5
+    subnetIP: 20.100.50.248
+    gatewayIP: 20.100.50.254
+    excludeIP: 20.100.50.254
+
+  n3network:
+    masterIf: ens5
+    subnetIP: 20.100.50.232
+    gatewayIP: 20.100.50.238
+    excludeIP: 20.100.50.238
+
+  n4network:
+    masterIf: ens5
+    subnetIP: 20.100.50.240
+    gatewayIP: 20.100.50.246
+    excludeIP: 20.100.50.246
+
+  n6network:
+    masterIf: ens5
+    subnetIP: 20.100.100.0
+    gatewayIP: 20.100.100.1
+    excludeIP: 20.100.100.254
+
+  n9network:
+    masterIf: ens5
+    subnetIP: 20.100.50.224
+    gatewayIP: 20.100.50.230
+    excludeIP: 20.100.50.230
+
+
+# These parameters can be used to enable/disable deployment of subcharts
+deployMongoDB: false
+deployAMF: false
+deployAUSF: false
+deployN3IWF: false
+deployNRF: false
+deployNSSF: false
+deployPCF: false
+deploySMF: false
+deployUDM: false
+deployUDR: false
+deployUPF: true
+deployWEBUI: false
+
+
+free5gc-nrf:
+  nrf:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-nrf
+      tag: 3.1.1
+
+free5gc-upf: 
+ uesubnet: 20.1.0.0/16
+ upf:
+  image:
+    name: 18.221.164.72:6087/free5gc-compose/free5gc-upf
+    tag: 3.1.1
+  # network paramters
+  n3if:  # GTP-U
+    ipAddress: 20.100.50.233
+  n4if:  # PFCP
+    ipAddress: 20.100.50.241
+  n6if:  # DN
+    ipAddress: 20.100.100.12
+  configuration:
+    configuration:
+      # debugLevel: panic|fatal|error|warn|info|debug|trace
+      debugLevel: info
+      ReportCaller: false
+
+      dnn_list:
+        - dnn: internet
+          cidr: 20.1.0.0/17
+          # [optional] apn_list[*].natifname
+          natifname: n6
+
+free5gc-smf:
+ smf: 
+  image:
+    name: 18.221.164.72:6087/free5gc-compose/free5gc-smf
+    tag: 3.1.1
+  configuration:
+    configuration: |-
+      smfName: SMF
+      snssaiInfos:
+        - sNssai:
+            sst: 1
+            sd: 010203
+          dnnInfos: # DNN information list
+            - dnn: internet # Data Network Name
+              dns: # the IP address of DNS
+                ipv4: 8.8.8.8
+        - sNssai:
+            sst: 1
+            sd: 112233
+          dnnInfos: # DNN information list
+            - dnn: internet # Data Network Name
+              dns: # the IP address of DNS
+                ipv4: 8.8.8.8
+        - sNssai:
+            sst: 2
+            sd: 112234    
+          dnnInfos:
+            - dnn: internet
+              dns: 
+                ipv4: 8.8.8.8
+      plmnList: # the list of PLMN IDs that this SMF belongs to (optional, remove this key when unnecessary)
+        - mcc: "208" # Mobile Country Code (3 digits string, digit: 0~9)
+          mnc: "93" # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+      userplaneInformation: # list of userplane information
+        upNodes: # information of userplane node (AN or UPF)
+          gNB1: # the name of the node
+            type: AN # the type of the node (AN or UPF)
+          UPF:  # the name of the node
+            type: UPF # the type of the node (AN or UPF)
+            nodeID: 20.100.50.241 # the IP/FQDN of N4 interface on this UPF (PFCP)
+            sNssaiUpfInfos: # S-NSSAI information list for this UPF
+                  - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                      sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                      sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                    dnnUpfInfoList: # DNN information list for this S-NSSAI
+                      - dnn: internet
+                        pools:
+                          - cidr: 20.1.0.0/17
+                  - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                      sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                      sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                    dnnUpfInfoList: # DNN information list for this S-NSSAI
+                      - dnn: internet
+                        pools:
+                          - cidr: 20.1.128.0/17
+            interfaces: # Interface list for this UPF
+                  - interfaceType: N3 # the type of the interface (N3 or N9)
+                    endpoints: # the IP address of this N3/N9 interface on this UPF
+                      - 20.100.50.233
+                    networkInstance: internet # Data Network Name (DNN)
+        links: # the topology graph of userplane, A and B represent the two nodes of each link
+          - A: gNB1
+            B: UPF
+      locality: area1 # Name of the location where a set of AMF, SMF and UPFs are located
+    
+    ueRoutingInfo: |-
+      UE1: # Group Name
+        members:
+        - imsi-208930000000003 # Subscription Permanent Identifier of the UE
+        topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
+        # default path derived from this topology
+        # node name should be consistent with smfcfg.yaml
+          - A: gNB1
+            B: BranchingUPF
+          - A: BranchingUPF
+            B: AnchorUPF1
+        specificPath:
+          - dest: 20.100.100.26/32 # the destination IP address on Data Network (DN)
+            # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
+            # The UPF's name should be consistent with smfcfg.yaml
+            path: [BranchingUPF, AnchorUPF2]
+
+      UE2: # Group Name
+        members:
+        - imsi-208930000000004 # Subscription Permanent Identifier of the UE
+        topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
+        # default path derived from this topology
+        # node name should be consistent with smfcfg.yaml
+          - A: gNB1
+            B: BranchingUPF
+          - A: BranchingUPF
+            B: AnchorUPF1
+        specificPath:
+          - dest: 20.100.100.16/32 # the destination IP address on Data Network (DN)
+            # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
+            # The UPF's name should be consistent with smfcfg.yaml
+            path: [BranchingUPF, AnchorUPF2]
+
+
+free5gc-amf:
+  amf:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-amf
+      tag: 3.1.1
+
+free5gc-ausf:
+  ausf:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-ausf
+      tag: 3.1.1
+
+free5gc-n3iwf:
+  n3iwf:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-n3iwf
+      tag: 3.1.1
+
+free5gc-nssf:
+  nssf:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-nssf
+      tag: 3.1.1
+
+free5gc-pcf:
+  pcf:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-pcf
+      tag: 3.1.1
+
+free5gc-udm:
+  udm:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-udm
+      tag: 3.1.1
+
+free5gc-udr:
+  udr:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-udr
+      tag: 3.1.1
+
+free5gc-webui:
+  webui:
+    image: 
+      name: 18.221.164.72:6087/free5gc-compose/free5gc-webui
+      tag: 3.1.1
+
